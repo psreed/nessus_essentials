@@ -14,11 +14,20 @@ class nessus_essentials (
   String $base_url     = 'https://www.tenable.com/downloads/api/v2/pages/nessus/files/Nessus',
 ) {
   if $facts['os']['family'] == 'RedHat' {
-    $package = "${base_url}-${version}-el${facts['os']['release']['major']}.${architecture}.rpm"
+    $package_src = "${base_url}-${version}-el${facts['os']['release']['major']}.${architecture}.rpm"
+    $package_name = "Nessus-${version}-el${facts['os']['release']['major']}.${architecture}"
+    package { $package_name:
+      ensure   => present,
+      provider => 'rpm',
+      source   => $package_src,
+    }
+#    notify { 'nessus_package': message => $package, }
+    service { 'nessusd':
+      ensure  => running,
+      enable  => true,
+      require => Package[$package_name],
+    }
   } elsif $facts['os']['name'] == 'Ubuntu' {
     $package = "${base_url}-${version}-ubuntu1604.${architecture}.deb"
   }
-
-  ensure_resource('package',$package, { 'ensure' => present, })
-  notify { 'nessus_package': message => $package, }
 }
