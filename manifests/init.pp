@@ -20,4 +20,5 @@ class nessus_essentials (
   }
 
   ensure_resource('package',$package, { 'ensure' => present, })
+  notify { 'nessus_package': message => $package, }
 }
